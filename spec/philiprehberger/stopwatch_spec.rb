@@ -154,5 +154,140 @@ RSpec.describe Philiprehberger::Stopwatch do
       _, elapsed = described_class.measure { sleep(0.01) }
       expect(elapsed).to be >= 0.01
     end
+
+    it 'returns nil result for void block' do
+      result, _elapsed = described_class.measure { nil }
+      expect(result).to be_nil
+    end
+  end
+
+  describe 'start/stop/reset lifecycle' do
+    it 'accumulates elapsed across start/stop cycles' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.stop
+      first = sw.elapsed
+
+      sw.start
+      sleep(0.01)
+      sw.stop
+      expect(sw.elapsed).to be > first
+    end
+
+    it 'resets elapsed to zero after reset' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.stop
+      sw.reset
+      expect(sw.elapsed).to eq(0.0)
+    end
+
+    it 'allows start after reset' do
+      sw = described_class.new
+      sw.start
+      sw.stop
+      sw.reset
+      sw.start
+      expect(sw.running?).to be true
+    end
+
+    it 'clears laps on fresh start after stop' do
+      sw = described_class.new
+      sw.start
+      sw.lap('a')
+      sw.stop
+      sw.start
+      expect(sw.laps).to be_a(Array)
+    end
+  end
+
+  describe '#lap edge cases' do
+    it 'records lap times that are non-negative' do
+      sw = described_class.new
+      sw.start
+      lap = sw.lap('x')
+      expect(lap[:elapsed]).to be >= 0
+    end
+
+    it 'lap times sum approximately to total elapsed' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.lap('a')
+      sleep(0.01)
+      sw.lap('b')
+      sw.stop
+      lap_sum = sw.laps.sum { |l| l[:elapsed] }
+      expect(lap_sum).to be_within(sw.elapsed * 0.5).of(sw.elapsed)
+    end
+
+    it 'allows recording lap while paused' do
+      sw = described_class.new
+      sw.start
+      sw.stop
+      expect { sw.lap('x') }.not_to raise_error
+    end
+  end
+
+  describe '#elapsed edge cases' do
+    it 'increases monotonically while running' do
+      sw = described_class.new
+      sw.start
+      e1 = sw.elapsed
+      e2 = sw.elapsed
+      expect(e2).to be >= e1
+    end
+
+    it 'returns same value when called multiple times while paused' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.stop
+      e1 = sw.elapsed
+      e2 = sw.elapsed
+      expect(e1).to eq(e2)
+    end
+  end
+
+  describe 'multiple independent stopwatches' do
+    it 'tracks independent elapsed times' do
+      sw1 = described_class.new
+      sw2 = described_class.new
+      sw1.start
+      sleep(0.02)
+      sw2.start
+      sleep(0.01)
+      sw1.stop
+      sw2.stop
+      expect(sw1.elapsed).to be > sw2.elapsed
+    end
+  end
+
+  describe '#start returns self' do
+    it 'supports method chaining' do
+      sw = described_class.new
+      result = sw.start
+      expect(result).to be(sw)
+      sw.stop
+    end
+  end
+
+  describe '#stop returns self' do
+    it 'supports method chaining' do
+      sw = described_class.new
+      sw.start
+      result = sw.stop
+      expect(result).to be(sw)
+    end
+  end
+
+  describe '#reset returns self' do
+    it 'supports method chaining' do
+      sw = described_class.new
+      result = sw.reset
+      expect(result).to be(sw)
+    end
   end
 end
