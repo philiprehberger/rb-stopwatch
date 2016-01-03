@@ -15,7 +15,7 @@ Precision stopwatch with lap timing, pause/resume, and formatted output
 Add to your Gemfile:
 
 ```ruby
-gem 'philiprehberger-stopwatch'
+gem "philiprehberger-stopwatch"
 ```
 
 Or install directly:
