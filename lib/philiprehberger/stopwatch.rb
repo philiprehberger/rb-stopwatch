@@ -91,6 +91,45 @@ module Philiprehberger
       @laps.dup
     end
 
+    # Get aggregate statistics across all recorded laps
+    #
+    # @return [Hash] { count:, total:, avg:, min:, max: }
+    def lap_stats
+      if @laps.empty?
+        return { count: 0, total: 0.0, avg: 0.0, min: 0.0, max: 0.0 }
+      end
+
+      times = @laps.map { |l| l[:elapsed] }
+      total = times.sum
+      {
+        count: times.length,
+        total: total,
+        avg: total / times.length,
+        min: times.min,
+        max: times.max
+      }
+    end
+
+    # Format elapsed time as a human-readable string
+    #
+    # @return [String]
+    def formatted_elapsed
+      self.class.format_duration(elapsed)
+    end
+
+    # Get formatted lap data
+    #
+    # @return [Array<Hash>] each with :name, :elapsed, :formatted
+    def formatted_laps
+      @laps.map do |lap|
+        {
+          name: lap[:name],
+          elapsed: lap[:elapsed],
+          formatted: self.class.format_duration(lap[:elapsed])
+        }
+      end
+    end
+
     # Check if the stopwatch is paused
     #
     # @return [Boolean]
@@ -114,6 +153,38 @@ module Philiprehberger
       result = yield
       elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
       [result, elapsed]
+    end
+
+    # Measure execution time and return formatted string
+    #
+    # @yield block to measure
+    # @return [String] formatted elapsed time
+    def self.measure_formatted(&)
+      _, elapsed = measure(&)
+      format_duration(elapsed)
+    end
+
+    # Format a duration in seconds as a human-readable string
+    #
+    # @param seconds [Float]
+    # @return [String]
+    def self.format_duration(seconds)
+      if seconds < 0.001
+        format('%.2fus', seconds * 1_000_000)
+      elsif seconds < 1.0
+        format('%.2fms', seconds * 1_000)
+      elsif seconds < 60.0
+        format('%.3fs', seconds)
+      elsif seconds < 3600.0
+        minutes = (seconds / 60).to_i
+        secs = (seconds % 60).to_i
+        "#{minutes}m #{secs}s"
+      else
+        hours = (seconds / 3600).to_i
+        minutes = ((seconds % 3600) / 60).to_i
+        secs = (seconds % 60).to_i
+        "#{hours}h #{minutes}m #{secs}s"
+      end
     end
 
     private

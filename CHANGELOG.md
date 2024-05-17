@@ -7,6 +7,14 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-03
+
+### Added
+- `lap_stats` for aggregate lap statistics (count, total, avg, min, max)
+- `formatted_elapsed` for human-readable time display
+- `formatted_laps` for formatted lap summaries
+- `measure_formatted` class method for quick formatted measurements
+
 ## [0.1.6] - 2026-03-31
 
 ### Added
