@@ -38,7 +38,7 @@ sw.lap('phase 2')
 sw.stop
 
 sw.elapsed  # => 1.234 (seconds)
-sw.laps     # => [{name: "phase 1", elapsed: 0.5}, {name: "phase 2", elapsed: 0.734}]
+sw.laps     # => [{name: "phase 1", elapsed: 0.5, split: 0.5}, {name: "phase 2", elapsed: 0.734, split: 1.234}]
 ```
 
 ### Pause and Resume
@@ -82,6 +82,20 @@ sw.formatted_laps
 # => [{ name: "setup", elapsed: 0.005, formatted: "5.00ms" }, ...]
 ```
 
+### Serialization
+
+```ruby
+sw = Philiprehberger::Stopwatch.new
+sw.start
+sw.lap('setup')
+sw.lap('process')
+sw.stop
+
+sw.to_h
+# => { running: false, paused: true, elapsed: 0.053,
+#      formatted_elapsed: "53.00ms", laps: [...], lap_stats: {...} }
+```
+
 ### Block Timing
 
 ```ruby
@@ -102,12 +116,15 @@ puts "Took #{formatted}"  # => "Took 12.50ms"
 | `#reset` | Reset all state |
 | `#lap(name)` | Record a lap with optional name |
 | `#elapsed` | Total elapsed time in seconds |
+| `#elapsed_ms` | Total elapsed time in milliseconds |
+| `#elapsed_us` | Total elapsed time in microseconds |
 | `#laps` | Array of recorded lap data |
 | `#running?` | Whether the stopwatch is actively running |
 | `#paused?` | Whether the stopwatch is paused |
 | `#lap_stats` | Aggregate lap statistics (count, total, avg, min, max) |
 | `#formatted_elapsed` | Human-readable elapsed time string |
 | `#formatted_laps` | Array of laps with formatted times |
+| `#to_h` | Serialize full stopwatch state to a hash |
 | `Stopwatch.measure { block }` | Measure block execution time |
 | `Stopwatch.measure_formatted { block }` | Measure block and return formatted string |
 
