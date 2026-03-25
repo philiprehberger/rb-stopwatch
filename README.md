@@ -27,7 +27,7 @@ gem install philiprehberger-stopwatch
 ## Usage
 
 ```ruby
-require 'philiprehberger/stopwatch'
+require "philiprehberger/stopwatch"
 
 sw = Philiprehberger::Stopwatch.new
 sw.start
@@ -80,8 +80,8 @@ puts "Took #{elapsed} seconds"
 
 ```bash
 bundle install
-bundle exec rspec      # Run tests
-bundle exec rubocop    # Check code style
+bundle exec rspec
+bundle exec rubocop
 ```
 
 ## License
