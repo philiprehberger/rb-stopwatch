@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/rb-stopwatch/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-stopwatch/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-stopwatch.svg)](https://rubygems.org/gems/philiprehberger-stopwatch)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-stopwatch)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Precision stopwatch with lap timing, pause/resume, and formatted output
 
@@ -86,4 +87,4 @@ bundle exec rubocop
 
 ## License
 
-MIT
+[MIT](LICENSE)
