@@ -21,11 +21,10 @@ module Philiprehberger
     def start
       raise Error, 'stopwatch is already running' if @running && !@paused
 
+      @start_time = now
       if @paused
-        @start_time = now
         @paused = false
       else
-        @start_time = now
         @elapsed_before_pause = 0.0
         @lap_start = @start_time
         @laps = []
