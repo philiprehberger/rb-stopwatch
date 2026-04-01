@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Precision stopwatch with lap timing, pause/resume, and formatted output'
   spec.description = 'High-resolution stopwatch using monotonic clock with start, stop, reset, lap timing, ' \
-                       'pause/resume support, and a class-level measure helper for block timing.'
+                     'pause/resume support, and a class-level measure helper for block timing.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-stopwatch'
   spec.license = 'MIT'
 
