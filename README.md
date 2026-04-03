@@ -54,11 +54,42 @@ sw.stop
 sw.elapsed    # => ~0.2 (paused time not counted)
 ```
 
+### Formatted Output
+
+```ruby
+sw = Philiprehberger::Stopwatch.new
+sw.start
+sleep(0.5)
+sw.formatted_elapsed  # => "500.12ms"
+
+sleep(65)
+sw.formatted_elapsed  # => "1m 5s"
+```
+
+### Lap Statistics
+
+```ruby
+sw = Philiprehberger::Stopwatch.new
+sw.start
+sw.lap('setup')
+sw.lap('process')
+sw.lap('teardown')
+
+sw.lap_stats
+# => { count: 3, total: 0.053, avg: 0.018, min: 0.005, max: 0.031 }
+
+sw.formatted_laps
+# => [{ name: "setup", elapsed: 0.005, formatted: "5.00ms" }, ...]
+```
+
 ### Block Timing
 
 ```ruby
 result, elapsed = Philiprehberger::Stopwatch.measure { expensive_operation }
 puts "Took #{elapsed} seconds"
+
+formatted = Philiprehberger::Stopwatch.measure_formatted { expensive_operation }
+puts "Took #{formatted}"  # => "Took 12.50ms"
 ```
 
 ## API
@@ -74,7 +105,11 @@ puts "Took #{elapsed} seconds"
 | `#laps` | Array of recorded lap data |
 | `#running?` | Whether the stopwatch is actively running |
 | `#paused?` | Whether the stopwatch is paused |
+| `#lap_stats` | Aggregate lap statistics (count, total, avg, min, max) |
+| `#formatted_elapsed` | Human-readable elapsed time string |
+| `#formatted_laps` | Array of laps with formatted times |
 | `Stopwatch.measure { block }` | Measure block execution time |
+| `Stopwatch.measure_formatted { block }` | Measure block and return formatted string |
 
 ## Development
 

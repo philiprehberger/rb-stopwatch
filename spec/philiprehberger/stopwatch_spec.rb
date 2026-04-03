@@ -161,6 +161,154 @@ RSpec.describe Philiprehberger::Stopwatch do
     end
   end
 
+  describe '#lap_stats' do
+    it 'returns zeros when no laps recorded' do
+      sw = described_class.new
+      stats = sw.lap_stats
+      expect(stats).to eq({ count: 0, total: 0.0, avg: 0.0, min: 0.0, max: 0.0 })
+    end
+
+    it 'returns correct stats for a single lap' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.lap('only')
+      stats = sw.lap_stats
+      expect(stats[:count]).to eq(1)
+      expect(stats[:total]).to be > 0
+      expect(stats[:avg]).to eq(stats[:total])
+      expect(stats[:min]).to eq(stats[:max])
+    end
+
+    it 'returns correct stats for multiple laps' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.lap('a')
+      sleep(0.02)
+      sw.lap('b')
+      stats = sw.lap_stats
+      expect(stats[:count]).to eq(2)
+      expect(stats[:total]).to be > 0
+      expect(stats[:avg]).to be_within(0.001).of(stats[:total] / 2.0)
+      expect(stats[:min]).to be <= stats[:max]
+    end
+
+    it 'returns zeros after reset' do
+      sw = described_class.new
+      sw.start
+      sw.lap('a')
+      sw.reset
+      stats = sw.lap_stats
+      expect(stats[:count]).to eq(0)
+      expect(stats[:total]).to eq(0.0)
+    end
+  end
+
+  describe '#formatted_elapsed' do
+    it 'formats microseconds' do
+      sw = described_class.new
+      allow(sw).to receive(:elapsed).and_return(0.000_123)
+      expect(sw.formatted_elapsed).to match(/\d+\.\d+us/)
+    end
+
+    it 'formats milliseconds' do
+      sw = described_class.new
+      allow(sw).to receive(:elapsed).and_return(0.123)
+      expect(sw.formatted_elapsed).to eq('123.00ms')
+    end
+
+    it 'formats seconds' do
+      sw = described_class.new
+      allow(sw).to receive(:elapsed).and_return(5.678)
+      expect(sw.formatted_elapsed).to eq('5.678s')
+    end
+
+    it 'formats minutes and seconds' do
+      sw = described_class.new
+      allow(sw).to receive(:elapsed).and_return(125.0)
+      expect(sw.formatted_elapsed).to eq('2m 5s')
+    end
+
+    it 'formats hours, minutes, and seconds' do
+      sw = described_class.new
+      allow(sw).to receive(:elapsed).and_return(3725.0)
+      expect(sw.formatted_elapsed).to eq('1h 2m 5s')
+    end
+
+    it 'formats zero elapsed' do
+      sw = described_class.new
+      expect(sw.formatted_elapsed).to eq('0.00us')
+    end
+  end
+
+  describe '#formatted_laps' do
+    it 'returns formatted data for named laps' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.lap('first')
+      sleep(0.01)
+      sw.lap('second')
+      result = sw.formatted_laps
+      expect(result.length).to eq(2)
+      expect(result[0][:name]).to eq('first')
+      expect(result[0][:elapsed]).to be_a(Float)
+      expect(result[0][:formatted]).to be_a(String)
+      expect(result[1][:name]).to eq('second')
+    end
+
+    it 'returns formatted data for unnamed laps' do
+      sw = described_class.new
+      sw.start
+      sw.lap
+      result = sw.formatted_laps
+      expect(result[0][:name]).to be_nil
+      expect(result[0][:formatted]).to be_a(String)
+    end
+
+    it 'returns empty array when no laps' do
+      sw = described_class.new
+      expect(sw.formatted_laps).to eq([])
+    end
+  end
+
+  describe '.measure_formatted' do
+    it 'returns a formatted string' do
+      result = described_class.measure_formatted { sleep(0.01) }
+      expect(result).to be_a(String)
+      expect(result).to match(/\d+\.\d+ms/)
+    end
+
+    it 'measures a trivial block' do
+      result = described_class.measure_formatted { 1 + 1 }
+      expect(result).to be_a(String)
+      expect(result).to match(/us|ms/)
+    end
+  end
+
+  describe '.format_duration' do
+    it 'handles boundary at 0.001 seconds' do
+      expect(described_class.format_duration(0.000_999)).to match(/us/)
+      expect(described_class.format_duration(0.001)).to match(/ms/)
+    end
+
+    it 'handles boundary at 1 second' do
+      expect(described_class.format_duration(0.999)).to match(/ms/)
+      expect(described_class.format_duration(1.0)).to match(/s$/)
+    end
+
+    it 'handles boundary at 60 seconds' do
+      expect(described_class.format_duration(59.9)).to match(/^\d+\.\d+s$/)
+      expect(described_class.format_duration(60.0)).to eq('1m 0s')
+    end
+
+    it 'handles boundary at 3600 seconds' do
+      expect(described_class.format_duration(3599.0)).to match(/^\d+m \d+s$/)
+      expect(described_class.format_duration(3600.0)).to eq('1h 0m 0s')
+    end
+  end
+
   describe 'start/stop/reset lifecycle' do
     it 'accumulates elapsed across start/stop cycles' do
       sw = described_class.new
