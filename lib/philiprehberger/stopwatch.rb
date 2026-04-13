@@ -61,16 +61,31 @@ module Philiprehberger
     # Record a lap
     #
     # @param name [String, nil] optional lap name
-    # @return [Hash] lap data with name and elapsed time
+    # @return [Hash] lap data with name, elapsed time, and cumulative split time
     def lap(name = nil)
       raise Error, 'stopwatch is not running' unless @running
 
       current = now
       lap_elapsed = current - @lap_start
-      lap_data = { name: name, elapsed: lap_elapsed }
+      split = @elapsed_before_pause + (current - @start_time)
+      lap_data = { name: name, elapsed: lap_elapsed, split: split }
       @laps << lap_data
       @lap_start = current
       lap_data
+    end
+
+    # Get total elapsed time in milliseconds
+    #
+    # @return [Float]
+    def elapsed_ms
+      elapsed * 1000.0
+    end
+
+    # Get total elapsed time in microseconds
+    #
+    # @return [Float]
+    def elapsed_us
+      elapsed * 1_000_000.0
     end
 
     # Get total elapsed time in seconds
@@ -119,15 +134,31 @@ module Philiprehberger
 
     # Get formatted lap data
     #
-    # @return [Array<Hash>] each with :name, :elapsed, :formatted
+    # @return [Array<Hash>] each with :name, :elapsed, :split, :formatted, :formatted_split
     def formatted_laps
       @laps.map do |lap|
         {
           name: lap[:name],
           elapsed: lap[:elapsed],
-          formatted: self.class.format_duration(lap[:elapsed])
+          split: lap[:split],
+          formatted: self.class.format_duration(lap[:elapsed]),
+          formatted_split: self.class.format_duration(lap[:split])
         }
       end
+    end
+
+    # Serialize the stopwatch state to a hash
+    #
+    # @return [Hash]
+    def to_h
+      {
+        running: running?,
+        paused: paused?,
+        elapsed: elapsed,
+        formatted_elapsed: formatted_elapsed,
+        laps: laps,
+        lap_stats: lap_stats
+      }
     end
 
     # Check if the stopwatch is paused

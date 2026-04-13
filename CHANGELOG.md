@@ -7,6 +7,14 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-12
+
+### Added
+- `to_h` for full stopwatch state serialization
+- `elapsed_ms` and `elapsed_us` convenience methods for millisecond and microsecond precision
+- Cumulative `:split` time in lap data alongside differential `:elapsed` time
+- `:split` and `:formatted_split` fields in `formatted_laps` output
+
 ## [0.2.0] - 2026-04-03
 
 ### Added

@@ -72,6 +72,7 @@ RSpec.describe Philiprehberger::Stopwatch do
       lap = sw.lap('first')
       expect(lap[:name]).to eq('first')
       expect(lap[:elapsed]).to be_a(Float)
+      expect(lap[:split]).to be_a(Float)
     end
 
     it 'records multiple laps' do
@@ -92,6 +93,36 @@ RSpec.describe Philiprehberger::Stopwatch do
       sw.start
       lap = sw.lap
       expect(lap[:name]).to be_nil
+    end
+  end
+
+  describe '#elapsed_ms' do
+    it 'returns elapsed time in milliseconds' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.stop
+      expect(sw.elapsed_ms).to be_within(1.0).of(sw.elapsed * 1000.0)
+    end
+
+    it 'returns 0 before starting' do
+      sw = described_class.new
+      expect(sw.elapsed_ms).to eq(0.0)
+    end
+  end
+
+  describe '#elapsed_us' do
+    it 'returns elapsed time in microseconds' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.stop
+      expect(sw.elapsed_us).to be_within(1000.0).of(sw.elapsed * 1_000_000.0)
+    end
+
+    it 'returns 0 before starting' do
+      sw = described_class.new
+      expect(sw.elapsed_us).to eq(0.0)
     end
   end
 
@@ -254,7 +285,9 @@ RSpec.describe Philiprehberger::Stopwatch do
       expect(result.length).to eq(2)
       expect(result[0][:name]).to eq('first')
       expect(result[0][:elapsed]).to be_a(Float)
+      expect(result[0][:split]).to be_a(Float)
       expect(result[0][:formatted]).to be_a(String)
+      expect(result[0][:formatted_split]).to be_a(String)
       expect(result[1][:name]).to eq('second')
     end
 
@@ -265,11 +298,50 @@ RSpec.describe Philiprehberger::Stopwatch do
       result = sw.formatted_laps
       expect(result[0][:name]).to be_nil
       expect(result[0][:formatted]).to be_a(String)
+      expect(result[0][:formatted_split]).to be_a(String)
     end
 
     it 'returns empty array when no laps' do
       sw = described_class.new
       expect(sw.formatted_laps).to eq([])
+    end
+  end
+
+  describe '#to_h' do
+    it 'returns a hash with all state' do
+      sw = described_class.new
+      sw.start
+      sw.lap('setup')
+      sw.stop
+      result = sw.to_h
+      expect(result[:running]).to be false
+      expect(result[:paused]).to be true
+      expect(result[:elapsed]).to be_a(Float)
+      expect(result[:formatted_elapsed]).to be_a(String)
+      expect(result[:laps]).to be_an(Array)
+      expect(result[:laps].length).to eq(1)
+      expect(result[:laps][0][:name]).to eq('setup')
+      expect(result[:laps][0][:split]).to be_a(Float)
+      expect(result[:lap_stats][:count]).to eq(1)
+    end
+
+    it 'returns empty state before starting' do
+      sw = described_class.new
+      result = sw.to_h
+      expect(result[:running]).to be false
+      expect(result[:paused]).to be false
+      expect(result[:elapsed]).to eq(0.0)
+      expect(result[:laps]).to be_empty
+      expect(result[:lap_stats][:count]).to eq(0)
+    end
+
+    it 'returns running state while active' do
+      sw = described_class.new
+      sw.start
+      result = sw.to_h
+      expect(result[:running]).to be true
+      expect(result[:paused]).to be false
+      sw.stop
     end
   end
 
@@ -348,6 +420,21 @@ RSpec.describe Philiprehberger::Stopwatch do
       sw.stop
       sw.start
       expect(sw.laps).to be_a(Array)
+    end
+  end
+
+  describe 'cumulative split times' do
+    it 'tracks cumulative split across laps' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.lap('a')
+      sleep(0.01)
+      sw.lap('b')
+      laps = sw.laps
+      expect(laps[1][:split]).to be > laps[0][:split]
+      expect(laps[0][:split]).to be_within(0.01).of(laps[0][:elapsed])
+      expect(laps[1][:split]).to be_within(0.01).of(laps[0][:elapsed] + laps[1][:elapsed])
     end
   end
 
