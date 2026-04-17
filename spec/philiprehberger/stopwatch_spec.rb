@@ -63,6 +63,103 @@ RSpec.describe Philiprehberger::Stopwatch do
       expect(sw.elapsed).to eq(0.0)
       expect(sw.laps).to be_empty
     end
+
+    it 'clears checkpoints on reset' do
+      sw = described_class.new
+      sw.start
+      sw.checkpoint('marker')
+      sw.reset
+      expect(sw.checkpoints).to be_empty
+    end
+  end
+
+  describe '#checkpoint' do
+    it 'records a named checkpoint while running' do
+      sw = described_class.new
+      sw.start
+      sw.checkpoint('mark')
+      expect(sw.checkpoints).to have_key('mark')
+      expect(sw.checkpoints['mark']).to be_a(Float)
+      expect(sw.checkpoints['mark']).to be >= 0
+    end
+
+    it 'raises when stopwatch is not running' do
+      sw = described_class.new
+      expect { sw.checkpoint('mark') }.to raise_error(described_class::Error)
+    end
+
+    it 'returns self for chaining' do
+      sw = described_class.new
+      sw.start
+      expect(sw.checkpoint('mark')).to be(sw)
+    end
+
+    it 'records multiple checkpoints' do
+      sw = described_class.new
+      sw.start
+      sw.checkpoint('first')
+      sw.checkpoint('second')
+      expect(sw.checkpoints.keys).to contain_exactly('first', 'second')
+    end
+  end
+
+  describe '#elapsed_at' do
+    it 'returns the cumulative split time at the named checkpoint' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.checkpoint('mark')
+      expect(sw.elapsed_at('mark')).to be_a(Float)
+      expect(sw.elapsed_at('mark')).to be > 0
+    end
+
+    it 'raises for an unknown checkpoint' do
+      sw = described_class.new
+      expect { sw.elapsed_at('missing') }.to raise_error(described_class::Error)
+    end
+
+    it 'returns frozen time regardless of further elapsed' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.checkpoint('mark')
+      at_mark = sw.elapsed_at('mark')
+      sleep(0.01)
+      expect(sw.elapsed_at('mark')).to eq(at_mark)
+    end
+  end
+
+  describe '#since' do
+    it 'returns elapsed time since the checkpoint' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.checkpoint('mark')
+      sleep(0.01)
+      expect(sw.since('mark')).to be > 0
+      expect(sw.since('mark')).to be < sw.elapsed
+    end
+
+    it 'raises for an unknown checkpoint' do
+      sw = described_class.new
+      expect { sw.since('missing') }.to raise_error(described_class::Error)
+    end
+  end
+
+  describe '#checkpoints' do
+    it 'returns an empty hash initially' do
+      sw = described_class.new
+      expect(sw.checkpoints).to eq({})
+    end
+
+    it 'returns a copy of the checkpoints hash' do
+      sw = described_class.new
+      sw.start
+      sw.checkpoint('mark')
+      copy = sw.checkpoints
+      copy.clear
+      expect(sw.checkpoints).to have_key('mark')
+    end
   end
 
   describe '#lap' do
