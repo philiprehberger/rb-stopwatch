@@ -8,6 +8,7 @@ module Philiprehberger
 
     def initialize
       @laps = []
+      @checkpoints = {}
       @running = false
       @paused = false
       @start_time = nil
@@ -50,6 +51,7 @@ module Philiprehberger
     # @return [self]
     def reset
       @laps = []
+      @checkpoints = {}
       @running = false
       @paused = false
       @start_time = nil
@@ -104,6 +106,46 @@ module Philiprehberger
     # @return [Array<Hash>]
     def laps
       @laps.dup
+    end
+
+    # Record a named checkpoint at the current cumulative elapsed time
+    #
+    # @param name [String, Symbol] checkpoint name
+    # @return [self]
+    def checkpoint(name)
+      raise Error, 'stopwatch is not running' unless @running
+
+      current = now
+      split = @elapsed_before_pause + (current - @start_time)
+      @checkpoints[name] = split
+      self
+    end
+
+    # Return the cumulative elapsed time recorded at a named checkpoint
+    #
+    # @param name [String, Symbol] checkpoint name
+    # @return [Float]
+    def elapsed_at(name)
+      raise Error, "checkpoint '#{name}' not found" unless @checkpoints.key?(name)
+
+      @checkpoints[name]
+    end
+
+    # Return the elapsed time since a named checkpoint was recorded
+    #
+    # @param name [String, Symbol] checkpoint name
+    # @return [Float]
+    def since(name)
+      raise Error, "checkpoint '#{name}' not found" unless @checkpoints.key?(name)
+
+      elapsed - @checkpoints[name]
+    end
+
+    # Return a copy of all recorded checkpoints
+    #
+    # @return [Hash]
+    def checkpoints
+      @checkpoints.dup
     end
 
     # Get aggregate statistics across all recorded laps

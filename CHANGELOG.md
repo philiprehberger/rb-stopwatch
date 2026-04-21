@@ -7,6 +7,14 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-16
+
+### Added
+- `#checkpoint(name)` — records a named moment storing the cumulative split time; raises if not running; returns self for chaining
+- `#elapsed_at(name)` — returns the cumulative elapsed time at a named checkpoint; raises `Error` if not found
+- `#since(name)` — returns elapsed time since the named checkpoint was recorded; raises `Error` if not found
+- `#checkpoints` — returns a dup of the internal checkpoints hash
+
 ## [0.3.0] - 2026-04-12
 
 ### Added

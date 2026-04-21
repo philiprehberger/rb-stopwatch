@@ -96,6 +96,26 @@ sw.to_h
 #      formatted_elapsed: "53.00ms", laps: [...], lap_stats: {...} }
 ```
 
+### Named Checkpoints
+
+```ruby
+sw = Philiprehberger::Stopwatch.new
+sw.start
+sleep(0.1)
+sw.checkpoint('after_setup')
+sleep(0.2)
+sw.checkpoint('after_process')
+
+sw.elapsed_at('after_setup')    # => ~0.1 (cumulative split at that moment)
+sw.elapsed_at('after_process')  # => ~0.3
+
+sw.since('after_setup')         # => ~0.2 (time elapsed since that checkpoint)
+sw.since('after_process')       # => ~0.0
+
+sw.checkpoints
+# => { "after_setup" => 0.1003, "after_process" => 0.3007 }
+```
+
 ### Block Timing
 
 ```ruby
@@ -121,6 +141,10 @@ puts "Took #{formatted}"  # => "Took 12.50ms"
 | `#laps` | Array of recorded lap data |
 | `#running?` | Whether the stopwatch is actively running |
 | `#paused?` | Whether the stopwatch is paused |
+| `#checkpoint(name)` | Record a named moment storing the current cumulative split time |
+| `#elapsed_at(name)` | Cumulative split time at the named checkpoint |
+| `#since(name)` | Elapsed time since the named checkpoint was recorded |
+| `#checkpoints` | Hash of all recorded checkpoints |
 | `#lap_stats` | Aggregate lap statistics (count, total, avg, min, max) |
 | `#formatted_elapsed` | Human-readable elapsed time string |
 | `#formatted_laps` | Array of laps with formatted times |
