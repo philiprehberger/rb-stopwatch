@@ -60,6 +60,17 @@ module Philiprehberger
       self
     end
 
+    # Reset and start the stopwatch in one call
+    #
+    # @return [self]
+    def restart
+      reset
+      start
+    end
+
+    alias pause stop
+    alias resume start
+
     # Record a lap
     #
     # @param name [String, nil] optional lap name

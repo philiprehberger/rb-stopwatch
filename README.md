@@ -47,11 +47,23 @@ sw.laps     # => [{name: "phase 1", elapsed: 0.5, split: 0.5}, {name: "phase 2",
 sw = Philiprehberger::Stopwatch.new
 sw.start
 sleep(0.1)
-sw.stop       # pause
-sw.start      # resume
+sw.pause      # alias for #stop
+sw.resume     # alias for #start
 sleep(0.1)
 sw.stop
 sw.elapsed    # => ~0.2 (paused time not counted)
+```
+
+### Restart
+
+```ruby
+sw = Philiprehberger::Stopwatch.new
+sw.start
+sleep(0.1)
+sw.lap('phase 1')
+sw.restart    # equivalent to #reset followed by #start
+sleep(0.05)
+sw.elapsed    # => ~0.05 (prior state cleared)
 ```
 
 ### Formatted Output
@@ -133,7 +145,10 @@ puts "Took #{formatted}"  # => "Took 12.50ms"
 | `Stopwatch.new` | Create a new stopwatch |
 | `#start` | Start or resume the stopwatch |
 | `#stop` | Pause the stopwatch |
+| `#pause` | Alias for `#stop` |
+| `#resume` | Alias for `#start` (resumes a paused stopwatch) |
 | `#reset` | Reset all state |
+| `#restart` | Reset and start the stopwatch in one call |
 | `#lap(name)` | Record a lap with optional name |
 | `#elapsed` | Total elapsed time in seconds |
 | `#elapsed_ms` | Total elapsed time in milliseconds |

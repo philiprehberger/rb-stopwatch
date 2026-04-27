@@ -52,6 +52,66 @@ RSpec.describe Philiprehberger::Stopwatch do
     end
   end
 
+  describe '#restart' do
+    it 'resets state and starts the stopwatch running' do
+      sw = described_class.new
+      sw.start
+      sleep(0.01)
+      sw.lap('first')
+      sw.stop
+      sw.restart
+      expect(sw.running?).to be true
+      expect(sw.paused?).to be false
+      expect(sw.laps).to be_empty
+      expect(sw.elapsed).to be < 0.01
+    end
+
+    it 'returns self for chaining' do
+      sw = described_class.new
+      expect(sw.restart).to be(sw)
+    end
+
+    it 'works on a fresh stopwatch' do
+      sw = described_class.new
+      sw.restart
+      expect(sw.running?).to be true
+    end
+  end
+
+  describe '#pause' do
+    it 'is an alias for #stop' do
+      sw = described_class.new
+      sw.start
+      sw.pause
+      expect(sw.paused?).to be true
+      expect(sw.running?).to be false
+    end
+
+    it 'raises when already paused, like stop' do
+      sw = described_class.new
+      sw.start
+      sw.pause
+      expect { sw.pause }.to raise_error(described_class::Error)
+    end
+  end
+
+  describe '#resume' do
+    it 'is an alias for #start that resumes a paused stopwatch' do
+      sw = described_class.new
+      sw.start
+      sw.pause
+      sw.resume
+      expect(sw.running?).to be true
+      expect(sw.paused?).to be false
+    end
+
+    it 'starts a fresh stopwatch' do
+      sw = described_class.new
+      sw.resume
+      expect(sw.running?).to be true
+    end
+  end
+
   describe '#reset' do
     it 'resets all state' do
       sw = described_class.new

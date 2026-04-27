@@ -7,6 +7,12 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-26
+
+### Added
+- `restart` — reset and start the stopwatch in one call
+- `pause` and `resume` aliases for `stop`/`start` to match pause/resume terminology
+
 ## [0.4.0] - 2026-04-16
 
 ### Added
