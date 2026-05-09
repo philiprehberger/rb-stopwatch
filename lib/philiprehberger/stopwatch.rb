@@ -14,6 +14,7 @@ module Philiprehberger
       @start_time = nil
       @elapsed_before_pause = 0.0
       @lap_start = nil
+      @last_tick = nil
     end
 
     # Start the stopwatch
@@ -57,6 +58,7 @@ module Philiprehberger
       @start_time = nil
       @elapsed_before_pause = 0.0
       @lap_start = nil
+      @last_tick = nil
       self
     end
 
@@ -85,6 +87,25 @@ module Philiprehberger
       @laps << lap_data
       @lap_start = current
       lap_data
+    end
+
+    # Record an unnamed tick and return the seconds since the previous tick
+    #
+    # On the first call after `start`, returns the seconds elapsed since the
+    # stopwatch began. Subsequent calls return the seconds since the previous
+    # tick. Useful for sequential timing in loops where naming each lap is
+    # noise — a thinner `lap` for ad-hoc measurement.
+    #
+    # @return [Float] seconds since the previous tick (or since start)
+    # @raise [Error] if the stopwatch is not running
+    def tick
+      raise Error, 'stopwatch is not running' unless running?
+
+      current = now
+      previous = @last_tick || @start_time
+      delta = current - previous
+      @last_tick = current
+      delta
     end
 
     # Get total elapsed time in milliseconds

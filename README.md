@@ -138,6 +138,23 @@ formatted = Philiprehberger::Stopwatch.measure_formatted { expensive_operation }
 puts "Took #{formatted}"  # => "Took 12.50ms"
 ```
 
+### Sequential Tick Timing
+
+For ad-hoc per-iteration timing in loops where naming each lap is overkill:
+
+```ruby
+sw = Philiprehberger::Stopwatch.new.start
+
+items.each do |item|
+  process(item)
+  puts "step took #{sw.tick} seconds"
+end
+```
+
+Each call to `#tick` returns the seconds elapsed since the previous tick
+(or since `#start` for the first call). A thinner `#lap` for unnamed
+sequential measurement.
+
 ## API
 
 | Method | Description |
@@ -150,6 +167,7 @@ puts "Took #{formatted}"  # => "Took 12.50ms"
 | `#reset` | Reset all state |
 | `#restart` | Reset and start the stopwatch in one call |
 | `#lap(name)` | Record a lap with optional name |
+| `#tick` | Return seconds since the previous tick (or since `start` on the first call) |
 | `#elapsed` | Total elapsed time in seconds |
 | `#elapsed_ms` | Total elapsed time in milliseconds |
 | `#elapsed_us` | Total elapsed time in microseconds |

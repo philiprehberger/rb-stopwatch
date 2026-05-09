@@ -7,6 +7,11 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-09
+
+### Added
+- `Stopwatch#tick` — record an unnamed event and return the seconds since the previous tick (or since `start` on the first call). A thinner `lap` for sequential per-iteration timing where named laps are noise. Raises when the stopwatch is not running or is paused; cleared by `reset`.
+
 ## [0.5.0] - 2026-04-26
 
 ### Added

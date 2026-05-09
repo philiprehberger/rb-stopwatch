@@ -682,4 +682,51 @@ RSpec.describe Philiprehberger::Stopwatch do
       expect(result).to be(sw)
     end
   end
+
+  describe '#tick' do
+    it 'returns seconds since start on the first call' do
+      sw = described_class.new.start
+      sleep 0.05
+      delta = sw.tick
+      expect(delta).to be_within(0.05).of(0.05)
+    end
+
+    it 'returns seconds since the previous tick on subsequent calls' do
+      sw = described_class.new.start
+      sleep 0.05
+      sw.tick
+      sleep 0.05
+      delta = sw.tick
+      expect(delta).to be_within(0.05).of(0.05)
+    end
+
+    it 'increases monotonically' do
+      sw = described_class.new.start
+      ticks = Array.new(3) do
+        sleep 0.01
+        sw.tick
+      end
+      expect(ticks.all?(&:positive?)).to be true
+    end
+
+    it 'raises when the stopwatch is not running' do
+      sw = described_class.new
+      expect { sw.tick }.to raise_error(described_class::Error)
+    end
+
+    it 'raises when the stopwatch is paused' do
+      sw = described_class.new.start
+      sw.stop
+      expect { sw.tick }.to raise_error(described_class::Error)
+    end
+
+    it 'is cleared by reset' do
+      sw = described_class.new.start
+      sw.tick
+      sw.reset.start
+      sleep 0.02
+      delta = sw.tick
+      expect(delta).to be_within(0.05).of(0.02)
+    end
+  end
 end
